@@ -30,43 +30,50 @@ namespace Api1
 
             string connectionString = Environment.GetEnvironmentVariable("SqlConnectionString");
 
-            using (SqlConnection conn = new SqlConnection(connectionString))
+            try
             {
-                conn.Open();
-
-                using (SqlCommand command = new SqlCommand(QUERY, conn))
+                using (SqlConnection conn = new SqlConnection(connectionString))
                 {
-                    SqlParameter param = command.CreateParameter();
-                    param.ParameterName = "@id";
-                    param.SqlDbType = System.Data.SqlDbType.Int;
-                    param.Direction = System.Data.ParameterDirection.Input;
-                    param.Value = id;
+                    conn.Open();
 
-                    command.Parameters.Add(param);
-
-                    using (SqlDataReader reader = command.ExecuteReader())
+                    using (SqlCommand command = new SqlCommand(QUERY, conn))
                     {
-                        while (reader.Read())
+                        SqlParameter param = command.CreateParameter();
+                        param.ParameterName = "@id";
+                        param.SqlDbType = System.Data.SqlDbType.Int;
+                        param.Direction = System.Data.ParameterDirection.Input;
+                        param.Value = id;
+
+                        command.Parameters.Add(param);
+
+                        using (SqlDataReader reader = command.ExecuteReader())
                         {
-                            product.ProductID = reader.GetInt32(0);
-                            product.Name = reader.GetString(1);
-                            product.ProductNumber = reader.GetString(2);
-                            product.Color = reader.GetString(3);
-                            product.StandardCost = reader.GetDecimal(4);
-                            product.ListPrice = reader.GetDecimal(5);
-                            product.Size = reader.GetString(6);
-                            product.Weight = reader.GetDecimal(7);
-                            product.SellStartDate = reader.GetDateTime(8);
-                            product.SellEndDate = reader.GetDateTime(9);
-                            product.ModifiedDate = reader.GetDateTime(10);
+                            while (reader.Read())
+                            {
+                                product.ProductID = reader.GetInt32(0);
+                                product.Name = reader.GetString(1);
+                                product.ProductNumber = reader.GetString(2);
+                                product.Color = reader.GetString(3);
+                                product.StandardCost = reader.GetDecimal(4);
+                                product.ListPrice = reader.GetDecimal(5);
+                                product.Size = reader.GetString(6);
+                                product.Weight = reader.GetDecimal(7);
+                                product.SellStartDate = reader.GetDateTime(8);
+                                product.SellEndDate = reader.GetDateTime(9);
+                                product.ModifiedDate = reader.GetDateTime(10);
+                            }
                         }
                     }
                 }
+
+                string jsonString = JsonSerializer.Serialize(product);
+
+                return new OkObjectResult(jsonString);
             }
-
-            string jsonString = JsonSerializer.Serialize(product);
-
-            return new OkObjectResult(jsonString);
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message, ex);
+            }
         }
     }
 }
